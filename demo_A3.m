@@ -173,7 +173,7 @@ end
 % They will be interpreted in Step 6 to evaluate and visualize your
 % results. See run_detector.m for more details.
 [bboxes, confidences, image_ids] = run_detector(VOCopts, w, b, feature_params);
-save('detected.mat', 'bboxes', 'confidences', 'image_ids');
+save('detected_test.mat', 'bboxes', 'confidences', 'image_ids');
 
 % run_detector will have (at least) two parameters which can heavily
 % influence fperformance -- how much to rescale each step of your multiscale
@@ -191,7 +191,7 @@ save('detected.mat', 'bboxes', 'confidences', 'image_ids');
 % Don't modify anything in 'evaluate_detections'!
 %[gt_ids, gt_bboxes, gt_isclaimed, tp, fp, duplicate_detections] = ...
 %    evaluate_boxes(VOCopts, bboxes, confidences, image_ids, feature_params);
-[ratio, tp, gt] = corloc(bboxes, confidences, image_ids, VOCopts);
+[ratio, tp, gt] = corloc(bboxes, confidences, image_ids);
 fprintf('CorLoc of this detection is %.3f\n', ratio);
 %visualize_detections_by_image(bboxes, confidences, image_ids, tp, fp, test_scn_path, label_path)
 %visualize_detections_by_image_no_gt(bboxes, confidences, image_ids, test_scn_path)
