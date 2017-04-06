@@ -40,6 +40,7 @@ D = (feature_params.template_size / feature_params.hog_cell_size)^2 * feature_pa
 n_features_per_image = ceil(num_samples/num_images);
 t_size = feature_params.template_size;
 features_neg = zeros(n_features_per_image*num_images, D);
+k=1;
 tic;
 for i = 1:num_images
     % display progress
@@ -68,18 +69,22 @@ for i = 1:num_images
     if gt == -1
         % extract features for image
         % compute and save features
-        img = single(imread(sprintf(VOCopts.imgpath,image_files{i})));scale = rand();
+        img = single(imread(sprintf(VOCopts.imgpath,image_files{i})));
         min_scale = 2*max(feature_params.template_size/size(img, 1), feature_params.template_size/size(img, 2));
-        image = imresize(img, max(min_scale, scale));
-        [height, width, channel] = size(image);
         for j = 1:n_features_per_image
+            scale = rand();
+            scaledimage = imresize(img, max(min_scale, scale));
+            [height, width, channel] = size(scaledimage);
+        
             offset_x = ceil(rand()*(width-t_size));
             offset_y = ceil(rand()*(height-t_size));
             
-            part_image = image(offset_y:offset_y+t_size-1, offset_x:offset_x+t_size-1);
-            features_neg((i-1)*n_features_per_image+j, :) = reshape(vl_hog(single(part_image), feature_params.hog_cell_size), [], 1);
+            part_image = scaledimage(offset_y:offset_y+t_size-1, offset_x:offset_x+t_size-1);
+            features_neg(k, :) = reshape(vl_hog(single(part_image), feature_params.hog_cell_size), [], 1);
+            k=k+1;
         end
     end
 end
+features_neg = features_neg(1:k, :);
 save('features_rand_neg.mat', 'features_neg', '-v7.3');
 

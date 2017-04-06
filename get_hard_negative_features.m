@@ -7,11 +7,13 @@
 function [features_pos, features_neg] = .... 
     get_hard_negative_features(features_pos, features_neg, w, b, threshold)
 
-for n=1:size(features_pos(1, :))
-    index_confidence = features_pos{n}*w+b<threshold;
-    features_neg = [features_neg;features_pos{n}(index_confidence, :)];
-    features_pos{n} = features_pos{n}(~index_confidence, :);
-end
+
+    pos_index_confidence = features_pos*w+b<threshold;
+    neg_index_confidence = features_neg*w+b<threshold;
+    features_neg = [features_neg(neg_index_confidence, :);features_pos(pos_index_confidence, :)];
+    features_pos = [features_neg(~neg_index_confidence, :);features_pos(~pos_index_confidence, :)];
+
+    
 
 end
 

@@ -67,7 +67,7 @@ resultPath = 'results/VOC2007';
 % 'scale_step', 0.9, 'scale_size', 20)
 
 feature_params = struct('template_size', 72, 'hog_cell_size', 6, ...
-    'hog_dimension', 31, 'threshold', -1.0, 'svm_lambda', 0.0001, ...
+    'hog_dimension', 31, 'threshold', 0, 'svm_lambda', 0.0001, ...
     'num_negative_examples', 75000, 'num_hard_negative_iteration', 10, ...
     'scale_step', 0.90, 'scale_size', 40)
 
@@ -104,7 +104,7 @@ catch
         fprintf('iteration:%d classifier training\n', t);
         features_pos_mat = cell2mat(features_pos);
         k=[repelem(1, size(features_pos_mat, 1)), repelem(-1, size(features_neg, 1))]';
-        [w b] = vl_svmtrain([features_pos_mat' features_neg'], [repelem(1, size(features_pos_mat, 1)), repelem(-1, size(features_neg, 1))]', feature_params.svm_lambda);
+        [w b] = vl_svmtrain([features_pos_mat' features_neg'], k, feature_params.svm_lambda);
         
         %window refinement
         %fprintf('iteration:%d window refining\n', t);

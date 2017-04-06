@@ -39,7 +39,7 @@ function [bboxes, confidences, image_ids] = ....
 % non-maximum suppression. For your ale_stepinitial debugging, you can operate only
 % at a single scale and you can skip calling non-maximum suppression.
 
-test_scenes = textread(sprintf(VOCopts.imgsetpath,'test'),'%s');
+test_scenes = textread(sprintf(VOCopts.imgsetpath,'val'),'%s');
 
 cell_size = feature_params.hog_cell_size;
 num_cell_in_window = feature_params.template_size / cell_size;

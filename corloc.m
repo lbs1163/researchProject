@@ -26,7 +26,8 @@ for l = 1:size(image_names)
                 flag = true;
                 gt = gt + 1 ;
             end
-            anno_box = [anno.objects(j).bbox(1:2), anno.objects(j).bbox(3)-anno.objects(j).bbox(1), anno.objects(j).bbox(4)-anno.objects(j).bbox(2)] ;
+            %anno_box = [anno.objects(j).bbox(1:2), anno.objects(j).bbox(3)-anno.objects(j).bbox(1), anno.objects(j).bbox(4)-anno.objects(j).bbox(2)] ;
+            anno_box = [anno.objects(j).bbox(2), anno.objects(j).bbox(1), anno.objects(j).bbox(4)-anno.objects(j).bbox(2), anno.objects(j).bbox(3)-anno.objects(j).bbox(1)];
             iou = bboxOverlapRatio(anno_box, best_box, 'Union') ;
             if iou > bestIOU
                 bestIOU = iou ;
