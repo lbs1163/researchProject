@@ -18,7 +18,7 @@ cwd=cd;
 cwd(cwd=='\')='/';
 
 % change this path to point to your copy of the PASCAL VOC data
-VOCopts.datadir='/home/nyada/MIL/VOCdevkit/VOC2007';
+VOCopts.datadir='VOCdevkit/VOC2007';
 
 % change this path to a writable directory for your results
 VOCopts.resdir=[cwd '/results/' VOCopts.dataset '/'];
