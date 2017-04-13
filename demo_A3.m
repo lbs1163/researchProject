@@ -190,7 +190,8 @@ save('detected_test.mat', 'bboxes', 'confidences', 'image_ids');
 
 % Don't modify anything in 'evaluate_detections'!
 %[gt_ids, gt_bboxes, gt_isclaimed, tp, fp, duplicate_detections] = ...
-%    evaluate_boxes(VOCopts, bboxes, confidences, image_ids, feature_params);
+%    evaluate_boxes(VOCopts, cls, bboxes, confidences, image_ids, feature_params);
+[rec,prec,ap] = modified_VOCevaldet(VOCopts,bboxes, confidences, image_ids,cls,draw);
 [ratio, tp, gt] = corloc(bboxes, confidences, image_ids);
 fprintf('CorLoc of this detection is %.3f\n', ratio);
 %visualize_detections_by_image(bboxes, confidences, image_ids, tp, fp, test_scn_path, label_path)

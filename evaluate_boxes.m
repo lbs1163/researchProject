@@ -1,5 +1,5 @@
 function [gt_ids, gt_bboxes, gt_isclaimed, tp, fp, duplicate_detections] = ...
-    evaluate_boxes(VOCopts, bboxes, confidences, image_ids, feature_params)
+    evaluate_boxes(VOCopts, cls, bboxes, confidences, image_ids, feature_params)
 % 'bboxes' is Nx4, N is the number of non-overlapping detections, and each
 % row is [x_min, y_min, x_max, y_max]
 % 'confidences' is the Nx1 (final cascade node) confidence of each
@@ -15,13 +15,14 @@ end
 
 %this lists the ground truth bounding boxes for the test set.
 
-gt_ids = []; gt_bboxes = [];
+gt_ids = []; 
+gt_bboxes = [];
 image_files = textread(sprintf(VOCopts.imgsetpath,'trainval'),'%s');
 for i=1:length(image_files)
     ann=PASreadrecord(sprintf(VOCopts.annopath,image_files{i}));
-    index_d = ([ann.objects.difficult] == zeros(1, length([ann.objects.difficult])));
+    %index_d = ([ann.objects.difficult] == zeros(1, length([ann.objects.difficult])));
     gt_ids = [gt_ids; ann.filename];
-    gt_bboxes = [gt_bboxes; double(ann.object.bbox)];
+    gt_bboxes = [gt_bboxes; reshape([ann.objects.bbox], 4, [])'];
 end
 
 gt_isclaimed = zeros(length(gt_ids),1);
@@ -46,7 +47,7 @@ for d=1:nd
         drawnow;
         tic;
     end
-    cur_gt_ids = strcmp(image_ids{d}+'.jpg', gt_ids); %will this be slow?
+    cur_gt_ids = strcmp(image_ids(d)+'.jpg', gt_ids); %will this be slow?
 
     bb = bboxes(d,:);
     ovmax=-inf;
