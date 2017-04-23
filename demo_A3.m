@@ -69,7 +69,7 @@ resultPath = 'results/VOC2007';
 feature_params = struct('template_size', 72, 'hog_cell_size', 6, ...
     'hog_dimension', 31, 'threshold', 0, 'svm_lambda', 0.0001, ...
     'num_negative_examples', 75000, 'num_hard_negative_iteration', 10, ...
-    'scale_step', 0.90, 'scale_size', 40)
+    'scale_step', 0.90, 'scale_size', 40);
 
 %% Step 1. Load positive training crops and random negative examples
 %YOU CODE 'get_positive_features' and 'get_random_negative_features'
@@ -102,7 +102,7 @@ catch
         
         %YOU CODE classifier training. Make sure the outputs are 'w' and 'b'.
         fprintf('iteration:%d classifier training\n', t);
-        features_pos_mat = cell2mat(features_pos);
+        features_pos_mat = features_pos;
         k=[repelem(1, size(features_pos_mat, 1)), repelem(-1, size(features_neg, 1))]';
         [w b] = vl_svmtrain([features_pos_mat' features_neg'], k, feature_params.svm_lambda);
         
@@ -162,7 +162,7 @@ catch
         % images in 'non_face_scn_path', and keep all of the features above some
         % confidence level.
         
-        [features_pos, features_neg] = get_hard_negative_features(features_pos, features_neg, w, b, 0.5);
+        % [features_pos, features_neg] = get_hard_negative_features(features_pos, features_neg, w, b, 0.5);
         
     end
     save('classifier.mat','w', 'b');
@@ -172,8 +172,12 @@ end
 % YOU CODE 'run_detector'. Make sure the outputs are properly structured!
 % They will be interpreted in Step 6 to evaluate and visualize your
 % results. See run_detector.m for more details.
-[bboxes, confidences, image_ids] = run_detector(VOCopts, w, b, feature_params);
-save('detected_test.mat', 'bboxes', 'confidences', 'image_ids');
+try
+    load('detected_test.mat');
+catch
+    [bboxes, confidences, image_ids] = run_detector(VOCopts, w, b, feature_params);
+    save('detected_test.mat', 'bboxes', 'confidences', 'image_ids');
+end
 
 % run_detector will have (at least) two parameters which can heavily
 % influence fperformance -- how much to rescale each step of your multiscale
@@ -191,7 +195,7 @@ save('detected_test.mat', 'bboxes', 'confidences', 'image_ids');
 % Don't modify anything in 'evaluate_detections'!
 %[gt_ids, gt_bboxes, gt_isclaimed, tp, fp, duplicate_detections] = ...
 %    evaluate_boxes(VOCopts, cls, bboxes, confidences, image_ids, feature_params);
-[rec,prec,ap] = modified_VOCevaldet(VOCopts,bboxes, confidences, image_ids,cls,draw);
+[rec,prec,ap] = modified_VOCevaldet(VOCopts,bboxes, confidences, image_ids,cls,true);
 [ratio, tp, gt] = corloc(bboxes, confidences, image_ids);
 fprintf('CorLoc of this detection is %.3f\n', ratio);
 %visualize_detections_by_image(bboxes, confidences, image_ids, tp, fp, test_scn_path, label_path)

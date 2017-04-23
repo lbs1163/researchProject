@@ -52,6 +52,7 @@ image_ids = zeros(0,1);
 
 scales = feature_params.scale_step.^linspace(0, feature_params.scale_size-1, feature_params.scale_size);
 
+
 for si = 1:length(test_scenes)
       
     fprintf('Detecting car in %s\n', test_scenes{si})
@@ -65,38 +66,44 @@ for si = 1:length(test_scenes)
     cur_image_ids = zeros(0,1);
     
     
-    for scale = scales
-        img_resize = imresize(img, scale);
-        [height, width] = size(img_resize);
-        
-        test_features = vl_hog(img_resize, cell_size); % n_cell_x * n_cell_y * 31
-        
-        n_window_x = floor((width-feature_params.template_size)/cell_size)+1;
-        n_window_y = floor((height-feature_params.template_size)/cell_size)+1;
-        
-        descriptors = zeros(n_window_x*n_window_y, D); % n_window * D
-        for i = 1:n_window_x
-            for j = 1:n_window_y
-                descriptors((i-1)*n_window_y+j, :) = ...
-                    reshape(test_features(j:(j+num_cell_in_window-1), i:(i+num_cell_in_window-1), :), 1, []);
+    for x_scale = scales
+        for y_scale = scales
+            [height, width] = size(img);
+            img_resize = imresize(img, [height * y_scale, width * x_scale]);
+            [height, width] = size(img_resize);
+
+            test_features = vl_hog(img_resize, cell_size); % n_cell_x * n_cell_y * 31
+
+            n_window_x = floor((width-feature_params.template_size)/cell_size)+1;
+            n_window_y = floor((height-feature_params.template_size)/cell_size)+1;
+
+            descriptors = zeros(n_window_x*n_window_y, D); % n_window * D
+            for i = 1:n_window_x
+                for j = 1:n_window_y
+                    %fprintf('%d %d %d %d\n', i, j, n_window_x, n_window_y)
+                    if (j+num_cell_in_window-1 <= n_window_y && i+num_cell_in_window-1 <= n_window_x)
+                        %fprintf('%d %d\n', i, j)
+                        descriptors((i-1)*n_window_y+j, :) = ...
+                            reshape(test_features(j:(j+num_cell_in_window-1), i:(i+num_cell_in_window-1), :), 1, []);
+                    end
+                end
             end
+
+            scores = descriptors*w + b;
+            indices = find(scores>feature_params.threshold);
+
+            left = floor((indices-1)./n_window_y);
+            top = mod(indices, n_window_y)-1;
+
+            cur_scale_bboxes = [(left*cell_size+1)/x_scale, (top*cell_size+1)/y_scale, ...
+                (left+num_cell_in_window)*cell_size/x_scale, (top+num_cell_in_window)*cell_size/y_scale];
+            cur_scale_confidences = scores(indices);
+            cur_scale_image_ids = repmat(test_scenes{si}, size(indices, 1), 1);
+
+            cur_bboxes      = [cur_bboxes;      cur_scale_bboxes];
+            cur_confidences = [cur_confidences; cur_scale_confidences];
+            cur_image_ids   = [cur_image_ids;   cur_scale_image_ids];
         end
-        
-        scores = descriptors*w + b;
-        indices = find(scores>feature_params.threshold);
-        
-        left = floor(indices./n_window_y);
-        top = mod(indices, n_window_y)-1;
-        
-        cur_scale_bboxes = [left*cell_size+1, top*cell_size+1, ...
-            (left+num_cell_in_window)*cell_size, (top+num_cell_in_window)*cell_size]./scale;
-        cur_scale_confidences = scores(indices);
-        cur_scale_image_ids = repmat(test_scenes{si}, size(indices, 1), 1);
-        
-        cur_bboxes      = [cur_bboxes;      cur_scale_bboxes];
-        cur_confidences = [cur_confidences; cur_scale_confidences];
-        cur_image_ids   = [cur_image_ids;   cur_scale_image_ids];
-        
     end
        
     
